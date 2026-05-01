@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Hydronix User Flow</title>
+
+<style>
+    *{
+box-sizing:border-box;
+max-width:100%;
+}
+  .cards{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+gap:20px;
+}
+  img, canvas, video{
+max-width:100%;
+height:auto;
+}
+
+body{
+margin:0;
+overflow-x:hidden;
+}
+body{
+font-family: "Segoe UI";
+background:#f4f7fb;
+padding:30px;
+color:#003366;
+}
+
+h1,h2{
+color:#003366;
+}
+
+.section{
+background:white;
+padding:20px;
+margin-bottom:20px;
+border-radius:12px;
+box-shadow:0 5px 15px rgba(0,0,0,0.08);
+}
+
+.code{
+background:#f0f0f0;
+padding:10px;
+border-radius:8px;
+font-family:monospace;
+overflow-x:auto;
+}
+
+.flow{
+background:#e6f2ff;
+padding:15px;
+border-radius:10px;
+white-space:pre-line;
+}
+</style>
+
+</head>
+
+<body>
+
+<h1>🌐 Hydronix Web System - User Journey Mechanism</h1>
+
+<div class="section">
+
+<h2>1. 🔐 Login Stage</h2>
+<p>The user enters the website and the system checks authentication using browser storage.</p>
+
+<div class="code">
+localStorage.getItem("loggedIn")
+</div>
+
+<p><b>Logic:</b></p>
+<ul>
+<li>If NOT logged in → redirect to login page</li>
+<li>If logged in → open dashboard</li>
+</ul>
+
+</div>
+
+<div class="section">
+
+<h2>2. 🏠 Dashboard Loading</h2>
+<p>After login, the system loads all UI components automatically.</p>
+
+<ul>
+<li>Sidebar navigation</li>
+<li>Weather cards</li>
+<li>Chart visualization</li>
+<li>Map section</li>
+<li>Language selector</li>
+</ul>
+
+</div>
+
+<div class="section">
+
+<h2>3. 👤 Personalization</h2>
+<p>The system retrieves the username and shows a welcome message.</p>
+
+<div class="code">
+localStorage.getItem("username")
+</div>
+
+<p>This improves user experience by making the system personalized.</p>
+
+</div>
+
+<div class="section">
+
+<h2>4. 🌧️ Weather Data Loading</h2>
+<p>The system automatically fetches real-time weather data from OpenWeatherMap API.</p>
+
+<div class="code">
+fetch("https://api.openweathermap.org/data/2.5/forecast")
+</div>
+
+<ul>
+<li>Rain data is extracted</li>
+<li>Data is processed into arrays</li>
+<li>Displayed in chart & UI cards</li>
+</ul>
+
+</div>
+
+<div class="section">
+
+<h2>5. 📊 Data Visualization</h2>
+<p>Data is displayed using Chart.js for better understanding.</p>
+
+<ul>
+<li>Line chart for rainfall</li>
+<li>Status indicators (Low / Moderate / High)</li>
+</ul>
+
+</div>
+
+<div class="section">
+
+<h2>6. 🗺️ Map Interaction</h2>
+<p>The system requests user location and displays it on an interactive map.</p>
+
+<div class="code">
+navigator.geolocation
+</div>
+
+<ul>
+<li>Gets latitude & longitude</li>
+<li>Loads Leaflet map</li>
+<li>Adds marker with weather info</li>
+</ul>
+
+</div>
+
+<div class="section">
+
+<h2>7. 🤖 Prediction Feature</h2>
+<p>When user clicks "Predict Rain", the system analyzes recent data.</p>
+
+<ul>
+<li>Collects last weather values</li>
+<li>Calculates average rainfall</li>
+<li>Classifies risk level</li>
+</ul>
+
+<p><b>Output:</b> Low / Moderate / High risk</p>
+
+</div>
+
+<div class="section">
+
+<h2>8. 🌍 Language System</h2>
+<p>User can switch between languages dynamically.</p>
+
+<ul>
+<li>English</li>
+<li>Arabic</li>
+<li>French</li>
+</ul>
+
+<p>Selected language is saved using localStorage.</p>
+
+</div>
+
+<div class="section">
+
+<h2>9. 💬 Notification System</h2>
+<p>A welcome toast message appears after login.</p>
+
+<ul>
+<li>Shows username</li>
+<li>Disappears automatically after 3 seconds</li>
+</ul>
+
+</div>
+
+<div class="section">
+
+<h2>🔄 Full System Flow</h2>
+
+<div class="flow">
+User opens website
+↓
+Login check (localStorage)
+↓
+Dashboard loads
+↓
+Weather API fetch
+↓
+Process data
+↓
+Render chart + map
+↓
+User interaction (predict / language)
+↓
+Dynamic UI updates
+</div>
+
+</div>
+
+<div class="section">
+
+<h2>🏆 Summary</h2>
+<p>
+The system provides a complete interactive web experience combining authentication,
+real-time weather data, geolocation mapping, visualization, and predictive analytics
+inside a single dynamic dashboard.
+</p>
+
+</div>
+
+</body>
+</html>
