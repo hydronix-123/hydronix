@@ -14,16 +14,18 @@
 <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
 
 <style>
-  *{
+*{
 box-sizing:border-box;
 max-width:100%;
 }
-  .cards{
+
+.cards{
 display:grid;
 grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
 gap:20px;
 }
-  img, canvas, video{
+
+img, canvas, video{
 max-width:100%;
 height:auto;
 }
@@ -32,25 +34,55 @@ body{
 margin:0;
 overflow-x:hidden;
 }
-*{margin:0;padding:0;box-sizing:border-box;font-family:"Segoe UI";}
 
-body{display:flex;background:#f4f7fb;transition:0.3s;}
-
-/* DARK MODE */
-body.dark{background:#0f172a;color:white;}
-body.dark .card{background:#1e293b;color:white;}
-body.dark .sidebar{background:#111827;}
-
-.sidebar{
-width:230px;height:100vh;background:#003366;
-color:white;padding:25px 15px;position:fixed;
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:"Segoe UI";
 }
 
-.logo{font-size:22px;font-weight:bold;margin-bottom:40px;}
+body{
+display:flex;
+background:#f4f7fb;
+transition:0.3s;
+}
+
+/* DARK MODE */
+body.dark{
+background:#0f172a;
+color:white;
+}
+body.dark .card{
+background:#1e293b;
+color:white;
+}
+body.dark .sidebar{
+background:#111827;
+}
+
+.sidebar{
+width:230px;
+height:100vh;
+background:#003366;
+color:white;
+padding:25px 15px;
+position:fixed;
+}
+
+.logo{
+font-size:22px;
+font-weight:bold;
+margin-bottom:40px;
+}
 
 .sidebar a{
-display:block;color:white;text-decoration:none;
-padding:12px;margin-bottom:10px;border-radius:8px;
+display:block;
+color:white;
+text-decoration:none;
+padding:12px;
+margin-bottom:10px;
+border-radius:8px;
 transition:0.3s;
 }
 
@@ -59,10 +91,16 @@ background:#0077cc;
 transform:translateX(5px);
 }
 
-.main{margin-left:230px;width:100%;padding:30px;}
+.main{
+margin-left:230px;
+width:100%;
+padding:30px;
+}
 
 .topbar{
-display:flex;justify-content:space-between;align-items:center;
+display:flex;
+justify-content:space-between;
+align-items:center;
 margin-bottom:30px;
 }
 
@@ -80,7 +118,9 @@ box-shadow:0 5px 15px rgba(0,0,0,0.08);
 transition:0.3s;
 }
 
-.card:hover{transform:translateY(-5px);}
+.card:hover{
+transform:translateY(-5px);
+}
 
 .btn{
 padding:10px 18px;
@@ -92,12 +132,77 @@ cursor:pointer;
 transition:0.3s;
 }
 
-.btn:hover{background:#005fa3;transform:scale(1.05);}
+.btn:hover{
+background:#005fa3;
+transform:scale(1.05);
+}
 
 #map{
 height:320px;
 margin-top:30px;
 border-radius:10px;
+}
+
+/* 📱 RESPONSIVE ONLY */
+@media (max-width: 768px){
+
+body{
+flex-direction:column;
+}
+
+.sidebar{
+position:relative;
+width:100%;
+height:auto;
+display:flex;
+flex-wrap:wrap;
+justify-content:center;
+gap:10px;
+padding:15px;
+}
+
+.sidebar a{
+margin:0;
+padding:10px;
+font-size:14px;
+}
+
+.logo{
+width:100%;
+text-align:center;
+margin-bottom:10px;
+}
+
+.main{
+margin-left:0;
+padding:15px;
+}
+
+.topbar{
+flex-direction:column;
+align-items:flex-start;
+gap:10px;
+}
+
+.cards{
+grid-template-columns:1fr;
+}
+
+.card{
+padding:15px;
+}
+
+#map{
+height:250px;
+}
+
+canvas{
+height:250px !important;
+}
+
+.btn{
+width:100%;
+}
 }
 
 </style>
@@ -120,11 +225,9 @@ border-radius:10px;
 
 <div class="topbar">
 <h2>Dashboard 🌧️</h2>
-
 <button onclick="toggleDark()" class="btn">🌙 Dark Mode</button>
 </div>
 
-<!-- CARDS -->
 <div class="cards">
 
 <div class="card">
@@ -144,13 +247,10 @@ border-radius:10px;
 
 </div>
 
-<!-- CHART -->
 <canvas id="chart" style="margin-top:30px;"></canvas>
 
-<!-- MAP -->
 <div id="map"></div>
 
-<!-- BUTTON -->
 <button class="btn" style="margin-top:20px;" onclick="predictRain()">
 Predict Rain 🤖
 </button>
@@ -162,18 +262,14 @@ Predict Rain 🤖
 const API_KEY = "d831b8220bd3050330c5f6bed0e2690b";
 
 let map;
-
-// GLOBAL DATA
 let rainData = [];
 let labels = [];
 let chart;
 
-// ================= DARK MODE =================
 function toggleDark(){
 document.body.classList.toggle("dark");
 }
 
-// ================= WEATHER (GPS BASED) =================
 async function loadWeather(lat = 30.0444, lon = 31.2357){
 
 const res = await fetch(
@@ -190,7 +286,6 @@ labels.push(data.list[i].dt_txt.split(" ")[0]);
 rainData.push(data.list[i].rain?.["3h"] ?? 0);
 }
 
-// CHART (Real + Predicted lines)
 chart = new Chart(document.getElementById("chart"),{
 type:"line",
 data:{
@@ -221,7 +316,6 @@ Math.round(water) + " L 💧";
 
 }
 
-// ================= MAP + GPS =================
 async function loadMap(){
 
 navigator.geolocation.getCurrentPosition(async(pos)=>{
@@ -229,7 +323,6 @@ navigator.geolocation.getCurrentPosition(async(pos)=>{
 let lat = pos.coords.latitude;
 let lon = pos.coords.longitude;
 
-// load weather for user location
 loadWeather(lat, lon);
 
 map = L.map("map").setView([lat,lon],8);
@@ -240,7 +333,6 @@ L.marker([lat,lon]).addTo(map)
 .bindPopup("You are here 📍")
 .openPopup();
 
-// WEATHER CURRENT LOCATION
 const res = await fetch(
 `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`
 );
@@ -251,19 +343,11 @@ let rain = data.rain?.["1h"] ?? 0;
 
 let history = JSON.parse(localStorage.getItem("rainHistory")) || [];
 
-history.push({
-lat, lon, rain,
-date: new Date().toISOString()
-});
+history.push({lat, lon, rain, date:new Date().toISOString()});
 
 localStorage.setItem("rainHistory", JSON.stringify(history));
 
-// HEATMAP
-let heatPoints = history.map(r => [
-r.lat,
-r.lon,
-r.rain * 2
-]);
+let heatPoints = history.map(r => [r.lat, r.lon, r.rain * 2]);
 
 L.heatLayer(heatPoints,{
 radius:25,
@@ -281,63 +365,48 @@ gradient:{
 
 }
 
-// ================= ML (LINEAR REGRESSION) =================
 function predictRain(){
 
 if(rainData.length === 0){
-document.getElementById("rain-status").innerText =
-"No data yet ❌";
+document.getElementById("rain-status").innerText = "No data yet ❌";
 return;
 }
 
-// ⚡ loading animation
-document.getElementById("rain-status").innerText =
-"AI is thinking 🤖...";
+document.getElementById("rain-status").innerText = "AI is thinking 🤖...";
 
 setTimeout(()=>{
 
-// X values (time index)
 let x = rainData.map((_,i)=>i);
 let y = rainData;
 
-// mean
 let n = x.length;
 let sumX = x.reduce((a,b)=>a+b,0);
 let sumY = y.reduce((a,b)=>a+b,0);
-
 let sumXY = x.reduce((acc,_,i)=>acc + x[i]*y[i],0);
 let sumX2 = x.reduce((acc,xi)=>acc + xi*xi,0);
 
-// slope & intercept (linear regression)
 let m = (n*sumXY - sumX*sumY) / (n*sumX2 - sumX*sumX);
 let b = (sumY - m*sumX) / n;
 
-// predictions
 let predicted = x.map(i => m*i + b);
 
-// update chart
 chart.data.datasets[1].data = predicted;
 chart.update();
 
-// final status
 let last = predicted[predicted.length - 1];
 
 if(last > 5){
-document.getElementById("rain-status").innerText =
-"AI Prediction: Heavy Rain 🌧️";
-} else if(last > 1){
-document.getElementById("rain-status").innerText =
-"AI Prediction: Light Rain 🌦️";
-} else {
-document.getElementById("rain-status").innerText =
-"AI Prediction: No Rain ☀️";
+document.getElementById("rain-status").innerText = "AI Prediction: Heavy Rain 🌧️";
+}else if(last > 1){
+document.getElementById("rain-status").innerText = "AI Prediction: Light Rain 🌦️";
+}else{
+document.getElementById("rain-status").innerText = "AI Prediction: No Rain ☀️";
 }
 
-}, 1200);
+},1200);
 
 }
 
-// INIT
 loadMap();
 
 </script>
