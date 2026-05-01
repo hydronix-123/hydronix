@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Investor Dashboard - Hydronix</title>
+
+<style>
+    *{
+box-sizing:border-box;
+max-width:100%;
+}
+  .cards{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+gap:20px;
+}
+  img, canvas, video{
+max-width:100%;
+height:auto;
+}
+
+body{
+margin:0;
+overflow-x:hidden;
+}
+body{
+font-family:Segoe UI;
+margin:0;
+background:#0b1220;
+color:white;
+}
+
+header{
+padding:20px;
+background:#111a2e;
+font-size:20px;
+font-weight:bold;
+}
+
+.grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+gap:20px;
+padding:20px;
+}
+
+.card{
+background:#111a2e;
+padding:20px;
+border-radius:12px;
+box-shadow:0 0 10px rgba(0,0,0,0.3);
+transition:0.3s;
+}
+
+.card:hover{
+transform:translateY(-5px);
+background:#16213a;
+}
+
+h3{
+margin:0 0 10px 0;
+color:#7cc7ff;
+}
+
+.big{
+font-size:26px;
+font-weight:bold;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+margin-top:20px;
+}
+
+th,td{
+padding:10px;
+border-bottom:1px solid #2a3550;
+text-align:left;
+}
+
+.badge{
+padding:5px 10px;
+border-radius:8px;
+font-size:12px;
+}
+
+.high{background:#ff4d4d;}
+.medium{background:#ffb84d;}
+.low{background:#4dd2ff;}
+</style>
+</head>
+
+<body>
+
+<header>
+💧 Hydronix - Investor Analytics Dashboard
+</header>
+
+<div class="grid">
+
+<div class="card">
+<h3>Total Rain Records</h3>
+<div class="big" id="total">0</div>
+</div>
+
+<div class="card">
+<h3>Average Rain Level</h3>
+<div class="big" id="avg">0 mm</div>
+</div>
+
+<div class="card">
+<h3>Total Water Potential</h3>
+<div class="big" id="water">0 L</div>
+</div>
+
+<div class="card">
+<h3>Estimated ROI</h3>
+<div class="big" id="roi">$0</div>
+</div>
+
+</div>
+
+<div class="card" style="margin:20px;">
+<h3>Best Locations for Water Harvesting</h3>
+
+<table>
+<thead>
+<tr>
+<th>Location</th>
+<th>Rain Level</th>
+<th>Priority</th>
+</tr>
+</thead>
+<tbody id="table"></tbody>
+</table>
+
+</div>
+
+<script>
+
+// ================= LOAD DATA =================
+let history = JSON.parse(localStorage.getItem("rainHistory")) || [];
+
+// ================= STATS =================
+document.getElementById("total").innerText = history.length;
+
+let totalRain = history.reduce((a,b)=>a + b.rain, 0);
+let avg = history.length ? (totalRain / history.length).toFixed(2) : 0;
+
+document.getElementById("avg").innerText = avg + " mm";
+
+// water potential
+let water = totalRain * 1000;
+document.getElementById("water").innerText = Math.round(water) + " L";
+
+// ROI (تقريبي)
+let roi = water * 0.002;
+document.getElementById("roi").innerText = "$" + roi.toFixed(2);
+
+// ================= GROUP LOCATIONS =================
+let zones = {};
+
+history.forEach(r=>{
+let key = Math.round(r.lat) + "," + Math.round(r.lon);
+
+if(!zones[key]){
+zones[key] = {rain:0,count:0,lat:r.lat,lon:r.lon};
+}
+
+zones[key].rain += r.rain;
+zones[key].count += 1;
+});
+
+// sort zones
+let sorted = Object.values(zones).sort((a,b)=>b.rain - a.rain);
+
+// ================= TABLE =================
+let table = document.getElementById("table");
+
+sorted.forEach(z=>{
+
+let level =
+z.rain > 20 ? "high" :
+z.rain > 10 ? "medium" : "low";
+
+table.innerHTML += `
+<tr>
+<td>${z.lat.toFixed(2)}, ${z.lon.toFixed(2)}</td>
+<td>${z.rain.toFixed(2)} mm</td>
+<td><span class="badge ${level}">${level.toUpperCase()}</span></td>
+</tr>
+`;
+
+});
+
+</script>
+
+</body>
+</html>
