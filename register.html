@@ -284,9 +284,9 @@ window.handleSubmit = async function(e){
     window.location.href = "website.html";
 
   }catch(error){
-    alert("Email has been already registered");
-  }
-};
+  console.log(error);
+  alert(error.message);
+}
 </script>
 
 <script>
