@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hydronix Map with Image Upload</title>
+<a src="translate.html"></a>
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<style>
+  *{box-sizing:border-box; max-width:100%;}
+  img, canvas, video{
+max-width:100%;
+height:auto;
+}
+  .cards{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+gap:20px;
+}
+body{
+margin:0;
+overflow-x:hidden;
+}
+  body, html { height: 100%; margin: 0; font-family: "Segoe UI", sans-serif; }
+  #map { height: 100vh; width: 100%; }
+
+  /* Popup */
+  .leaflet-popup-content { width: 250px; }
+  .popup-form input, .popup-form button {
+    display: block;
+    width: 100%;
+    margin: 5px 0;
+    padding: 6px;
+    box-sizing: border-box;
+  }
+
+  /* اللغة selector */
+  #languageSelector {
+    position: absolute;
+    z-index: 1000;
+    top: 10px;
+    left: 10px;
+    padding: 5px;
+  }
+  .leaflet-top.leaflet-left {
+  top: 30px;   /* زودي الرقم لو عايزة تنزل أكتر */
+}
+
+</style>
+</head>
+<body>
+
+<div id="map"></div>
+<select id="languageSelector">
+  <option value="en">English</option>
+  <option value="ar">العربية</option>
+  <option value="fr">Français</option>
+</select>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+// ================== CONFIG ==================
+const supabaseUrl = "https://knqwxgrqfpkknyfphdkb.supabase.co";
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtucXd4Z3JxZnBra255ZnBoZGtiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEyNDY3ODcsImV4cCI6MjA4NjgyMjc4N30.D8hJsAqp821X-5u78d9f-iDu3AjZozgkJ3nQxuuG7Q8";
+const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+let currentLang = localStorage.getItem("lang") || "en";
+document.getElementById("languageSelector").value = currentLang;
+
+const translations = {
+  en: {
+    placeName: "Place Name",
+    enterName: "Enter name",
+    uploadImage: "Upload Image",
+    addMarker: "Add Marker",
+    rainLastDays: "Rain (Last 2 days)",
+    wrongPlace: "The location name does not match this area!",
+    okPlace: "Location verified"
+  },
+  ar: {
+    placeName: "اسم المكان",
+    enterName: "ادخل الاسم",
+    uploadImage: "ارفع صورة",
+    addMarker: "إضافة العلامة",
+    rainLastDays: "كمية المطر (آخر يومين)",
+    wrongPlace: "اسم المكان لا يطابق هذه المنطقة!",
+    okPlace: "تم التحقق من المكان"
+  },
+  fr: {
+    placeName: "Nom du lieu",
+    enterName: "Entrez le nom",
+    uploadImage: "Télécharger une image",
+    addMarker: "Ajouter un point",
+    rainLastDays: "Pluie (2 derniers jours)",
+    wrongPlace: "Le nom ne correspond pas à cette zone !",
+    okPlace: "Lieu vérifié"
+  }
+};
+
+// ================== MAP ==================
+const map = L.map('map').setView([30.0444, 31.2357], 12);
+
+const tileLayers = {
+  en: L.tileLayer('https://{s}.tile.openstreetmap.de/{z}/{x}/{y}.png'),
+  fr: L.tileLayer('https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png'),
+  ar: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png')
+};
+
+let currentLayer = tileLayers[currentLang].addTo(map);
+
+// ================== LANGUAGE SWITCH ==================
+document.getElementById("languageSelector").addEventListener("change", function () {
+  currentLang = this.value;
+  localStorage.setItem("lang", currentLang);
+
+  map.removeLayer(currentLayer);
+  currentLayer = tileLayers[currentLang].addTo(map);
+
+  loadMarkers(); // إعادة تحميل الماركرز بلغة جديدة
+});
+
+// ================== VERIFY PLACE ==================
+async function verifyPlace(name, lat, lng) {
+  const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(name)}&accept-language=${currentLang}`;
+  const res = await fetch(url);
+  const data = await res.json();
+  if (!data.length) return false;
+
+  const placeLat = parseFloat(data[0].lat);
+  const placeLon = parseFloat(data[0].lon);
+
+  const distance = Math.sqrt(
+    Math.pow(placeLat - lat, 2) + Math.pow(placeLon - lng, 2)
+  );
+
+  return distance < 0.1; // لو بعيد أكتر من كده يبقى غلط
+}
+
+// ================== POPUP ==================
+function createPopupContent(lat, lng) {
+  const t = translations[currentLang];
+  return `
+    <div class="popup-form">
+      <label>${t.placeName}</label>
+      <input type="text" id="placeName" placeholder="${t.enterName}" oninput="clearMessage()">
+      
+      <div id="verifyMessage" style="font-size:13px; margin:4px 0;"></div>
+
+      <label>${t.uploadImage}</label>
+      <input type="file" id="placeMedia" accept="image/*">
+
+      <button onclick="addMarker(${lat}, ${lng})">${t.addMarker}</button>
+    </div>
+  `;
+}
+
+
+// ================== ADD MARKER ==================
+window.addMarker = async function (lat, lng) {
+
+  const name = document.getElementById('placeName').value;
+  if (!name) return;
+
+  const valid = await verifyPlace(name, lat, lng);
+  const t = translations[currentLang];
+
+  if (!valid) {
+    alert(t.wrongPlace);
+    return;
+  } else {
+    alert(t.okPlace);
+  }
+
+  const rainAmount = 0;
+
+  L.marker([lat, lng])
+    .addTo(map)
+    .bindPopup(`<b>${name}</b><br>${t.rainLastDays}: ${rainAmount} mm`);
+
+  await supabaseClient.from('rain_markers').insert([
+    { name, rain_amount: rainAmount, latitude: lat, longitude: lng }
+  ]);
+
+  map.closePopup();
+};
+
+// ================== LOAD MARKERS ==================
+async function loadMarkers() {
+  const { data } = await supabaseClient.from('rain_markers').select('*');
+  if (!data) return;
+
+  map.eachLayer(layer => {
+    if (layer instanceof L.Marker) map.removeLayer(layer);
+  });
+
+  data.forEach(marker => {
+    L.marker([marker.latitude, marker.longitude])
+      .addTo(map)
+      .bindPopup(`<b>${marker.name}</b><br>${translations[currentLang].rainLastDays}: ${marker.rain_amount} mm`);
+  });
+}
+
+loadMarkers();
+
+// ================== CLICK ==================
+map.on('click', function (e) {
+  const lat = e.latlng.lat.toFixed(5);
+  const lng = e.latlng.lng.toFixed(5);
+
+  L.popup()
+    .setLatLng(e.latlng)
+    .setContent(createPopupContent(lat, lng))
+    .openOn(map);
+});
+</script>
+
+</body>
+</html>
