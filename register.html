@@ -274,7 +274,7 @@ window.handleSubmit = async function(e){
   const firstName = document.getElementById("firstName").value;
   const lastName = document.getElementById("lastName").value;
 
-  try{
+  try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
 
     await updateProfile(userCredential.user, {
@@ -284,10 +284,11 @@ window.handleSubmit = async function(e){
     alert("Account created successfully ✅");
     window.location.href = "website.html";
 
-  }catch(error){
-  console.log(error);
-  alert(error.message);
-}
+  } catch (error) {
+    console.log(error);
+    alert(error.message);
+  }
+};
 </script>
 
 <script>
